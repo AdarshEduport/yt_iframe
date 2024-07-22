@@ -137,10 +137,10 @@ class _PlayerDemoState extends State<PlayerDemo> {
     super.initState();
     _controller = YoutubePlayerController(
       params: const YoutubePlayerParams(
-        showControls: false,
+        showControls: true,
         mute: false,
         showFullscreenButton: true,
-        pointerEvents: PointerEvents.none,
+        pointerEvents: PointerEvents.auto,
         loop: false,
         showVideoAnnotations: false,
         strictRelatedVideos: true,

@@ -160,455 +160,515 @@ class _YoutubePlayerScaffoldState extends State<YoutubePlayerScaffold> {
         return Container(
           // width: widget.controlsPadding,
           color: Colors.black,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            child: Stack(
-              children: [
-                //! Boundary
-                SizedBox(width: double.infinity, height: double.infinity),
-
-                //! Player
-                Center(
-                  child: AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: YoutubePlayer(
-                      controller: widget.controller,
-                      aspectRatio: widget.aspectRatio,
-                      gestureRecognizers: widget.gestureRecognizers,
-                      enableFullScreenOnVerticalDrag:
-                          widget.enableFullScreenOnVerticalDrag,
-                      backgroundColor: widget.backgroundColor,
-                    ),
-                  ),
-                ),
-
-                //! Shelter
-                YoutubeValueBuilder(builder: (context, value) {
-                  return GestureDetector(
-                    onTap: () {
-                      _toggleControlles();
-                    },
-                    child: Visibility(
-                      // visible: value.playerState == PlayerState.paused,
-                      child: AnimatedContainer(
-                          width: double.infinity,
-                          height: double.infinity,
-                          duration: const Duration(milliseconds: 300),
-                          // color: _controller.value.isControlsVisible ? Colors.black.withAlpha(150) : Colors.transparent,
-                          color: value.isControlsVisible
-                              ? Colors.black.withAlpha(120)
-                              : value.playerState == PlayerState.paused
-                                  ? Colors.black.withAlpha(160)
-                                  : Colors.transparent
-                          // color: Colors.red,
-                          ),
-                    ),
-                  );
-                }),
-
-                //!  Center controls
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  left: 0,
-                  top: 0,
-                  child: YoutubeValueBuilder(
-                    builder: (context, value) {
-                      return Visibility(
-                        visible: value.isControlsVisible,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // TODO
-                            // for the seek we need to change to seek bar and player durarion also
-                            // so seek multiple times is holded
-                            StreamBuilder<YoutubeVideoState>(
-                              initialData: const YoutubeVideoState(),
-                              stream: widget.controller.videoStateStream,
-                              builder: (context, snapshot) {
-                                final position =
-                                    snapshot.data?.position.inSeconds ?? 0;
-
-                                return Expanded(
-                                  child: InkWell(
-                                    onTap: () async {
-                                      // if (position >= 10) {
-                                      await widget.controller.seekTo(
-                                        seconds: position - 5,
-                                        allowSeekAhead: true,
-                                      );
-                                      await widget.controller.playVideo();
-
-                                      // }
-                                    },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: const Color(0x33263047),
-                                        // color: Colors.white.withOpacity(.8),
-                                      ),
-                                      padding: EdgeInsets.fromLTRB(9, 6, 9, 9),
-                                      child: SvgPicture.asset(
-                                        PlayerImages.seekBack,
-                                        fit: BoxFit.scaleDown,
-                                        height: value.fullScreenOption.enabled
-                                            ? 50
-                                            : 28,
-                                        width: value.fullScreenOption.enabled
-                                            ? 50
-                                            : 28,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                            const SizedBox(
-                              width: 5,
-                            ),
-                            Expanded(
-                              child: InkWell(
-                                onTap: () {
-                                  value.playerState == PlayerState.playing
-                                      ? context.ytController.pauseVideo()
-                                      : context.ytController.playVideo();
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-
-                                    color: const Color(0x33263047),
-                                    // color: Colors.white.withOpacity(.8),
-                                  ),
-                                  padding:
-                                      value.playerState == PlayerState.playing
-                                          ? EdgeInsets.fromLTRB(11, 11, 11, 11)
-                                          : EdgeInsets.fromLTRB(11, 11, 7, 11),
-                                  child: value.playerState ==
-                                          PlayerState.playing
-                                      ? SvgPicture.asset(
-                                          PlayerImages.pause,
-                                          fit: BoxFit.scaleDown,
-                                          height: value.fullScreenOption.enabled
-                                              ? 50
-                                              : 24,
-                                          width: value.fullScreenOption.enabled
-                                              ? 50
-                                              : 24,
-                                        )
-                                      : SvgPicture.asset(
-                                          PlayerImages.play,
-                                          fit: BoxFit.scaleDown,
-                                          height: value.fullScreenOption.enabled
-                                              ? 50
-                                              : 24,
-                                          width: value.fullScreenOption.enabled
-                                              ? 50
-                                              : 24,
-                                        ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 5,
-                            ),
-                            StreamBuilder<YoutubeVideoState>(
-                              initialData: YoutubeVideoState(),
-                              stream: widget.controller.videoStateStream,
-                              builder: (context, snapshot) {
-                                var position =
-                                    snapshot.data?.position.inSeconds ?? 0;
-                                // var lastPosition = 0;
-                                // var pressedCount = 0;
-                                return Expanded(
-                                  child: InkWell(
-                                    onTap: () async {
-                                      await widget.controller.seekTo(
-                                        seconds: (position + 5),
-                                        allowSeekAhead: true,
-                                      );
-                                      await widget.controller.playVideo();
-                                      // pressedCount += 1;
-                                      // final duration = context.ytController.metadata.duration.inSeconds;
-                                      // if (lastPosition > position) {
-                                      //   widget.controller.seekTo(seconds: (lastPosition + 10));
-                                      //   lastPosition = position + 10;
-                                      // } else {
-                                      //   widget.controller.seekTo(seconds: (position + 10));
-                                      //   lastPosition = position +10;
-                                      // }
-
-                                      // if ((position - lastPosition) <= 2) {
-                                      //   widget.controller
-                                      //       .seekTo(seconds: (position + (10 * pressedCount)).toDouble());
-                                      // }else{
-                                      //    widget.controller
-                                      //       .seekTo(seconds: (position + 10).toDouble());
-                                      // }
-                                    },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: const Color(0x33263047),
-                                        // color: Colors.white.withOpacity(.8),
-                                      ),
-                                      padding: EdgeInsets.fromLTRB(9, 6, 9, 9),
-                                      child: SvgPicture.asset(
-                                        PlayerImages.seekFront,
-                                        fit: BoxFit.scaleDown,
-                                        height: value.fullScreenOption.enabled
-                                            ? 54
-                                            : 28,
-                                        width: value.fullScreenOption.enabled
-                                            ? 54
-                                            : 28,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
+          child: widget.controller.params.showControls == true
+              ? Stack(
+                  children: [
+                    Center(
+                      child: AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: YoutubePlayer(
+                          controller: widget.controller,
+                          aspectRatio: widget.aspectRatio,
+                          gestureRecognizers: widget.gestureRecognizers,
+                          enableFullScreenOnVerticalDrag:
+                              widget.enableFullScreenOnVerticalDrag,
+                          backgroundColor: widget.backgroundColor,
                         ),
-                      );
-                    },
-                  ),
-                ),
+                      ),
+                    ),
+                    Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          height: 50,
+                          color: Colors.green.withOpacity(.0),
+                          width: 200,
+                        ))
+                  ],
+                )
+              : AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  child: Stack(
+                    children: [
+                      //! Boundary
+                      SizedBox(width: double.infinity, height: double.infinity),
 
-                //! Top back row
+                      //! Player
+                      Center(
+                        child: AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: YoutubePlayer(
+                            controller: widget.controller,
+                            aspectRatio: widget.aspectRatio,
+                            gestureRecognizers: widget.gestureRecognizers,
+                            enableFullScreenOnVerticalDrag:
+                                widget.enableFullScreenOnVerticalDrag,
+                            backgroundColor: widget.backgroundColor,
+                          ),
+                        ),
+                      ),
 
-                Positioned.fill(
-                  top: 0,
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: YoutubeValueBuilder(builder: (context, value) {
-                      return Builder(builder: (context) {
-                        return SizedBox(
-                          // width: MediaQuery.of(context).size.width,
-                          width: double.infinity - widget.controlsPadding,
+                      //! Shelter
+                      YoutubeValueBuilder(builder: (context, value) {
+                        return GestureDetector(
+                          onTap: () {
+                            _toggleControlles();
+                          },
                           child: Visibility(
-                            visible: value.isControlsVisible,
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(11, 12, 11, 0),
+                            // visible: value.playerState == PlayerState.paused,
+                            child: AnimatedContainer(
+                                width: double.infinity,
+                                height: double.infinity,
+                                duration: const Duration(milliseconds: 300),
+                                // color: _controller.value.isControlsVisible ? Colors.black.withAlpha(150) : Colors.transparent,
+                                color: value.isControlsVisible
+                                    ? Colors.black.withAlpha(120)
+                                    : value.playerState == PlayerState.paused
+                                        ? Colors.black.withAlpha(160)
+                                        : Colors.transparent
+                                // color: Colors.red,
+                                ),
+                          ),
+                        );
+                      }),
+
+                      //!  Center controls
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        left: 0,
+                        top: 0,
+                        child: YoutubeValueBuilder(
+                          builder: (context, value) {
+                            return Visibility(
+                              visible: value.isControlsVisible,
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Visibility(
-                                    replacement: SizedBox(
-                                      width: 20,
-                                    ),
-                                    visible: widget.isBackVisible,
-                                    child: InkWell(
-                                      onTap: widget.function,
-                                      child: Container(
-                                        width: 31,
-                                        height: 31,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: const Color(0x33263047)
-                                              .withOpacity(.8),
-                                          // color: Colors.white.withOpacity(.8),
-                                        ),
-                                        child: const Center(
-                                          child: Icon(
-                                            Icons.arrow_back,
-                                            color: Colors.white,
+                                  // TODO
+                                  // for the seek we need to change to seek bar and player durarion also
+                                  // so seek multiple times is holded
+                                  StreamBuilder<YoutubeVideoState>(
+                                    initialData: const YoutubeVideoState(),
+                                    stream: widget.controller.videoStateStream,
+                                    builder: (context, snapshot) {
+                                      final position =
+                                          snapshot.data?.position.inSeconds ??
+                                              0;
+
+                                      return Expanded(
+                                        child: InkWell(
+                                          onTap: () async {
+                                            // if (position >= 10) {
+                                            await widget.controller.seekTo(
+                                              seconds: position - 5,
+                                              allowSeekAhead: true,
+                                            );
+                                            await widget.controller.playVideo();
+
+                                            // }
+                                          },
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: const Color(0x33263047),
+                                              // color: Colors.white.withOpacity(.8),
+                                            ),
+                                            padding:
+                                                EdgeInsets.fromLTRB(9, 6, 9, 9),
+                                            child: SvgPicture.asset(
+                                              PlayerImages.seekBack,
+                                              fit: BoxFit.scaleDown,
+                                              height:
+                                                  value.fullScreenOption.enabled
+                                                      ? 50
+                                                      : 28,
+                                              width:
+                                                  value.fullScreenOption.enabled
+                                                      ? 50
+                                                      : 28,
+                                            ),
                                           ),
                                         ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(
+                                    width: 5,
+                                  ),
+                                  Expanded(
+                                    child: InkWell(
+                                      onTap: () {
+                                        value.playerState == PlayerState.playing
+                                            ? context.ytController.pauseVideo()
+                                            : context.ytController.playVideo();
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+
+                                          color: const Color(0x33263047),
+                                          // color: Colors.white.withOpacity(.8),
+                                        ),
+                                        padding: value.playerState ==
+                                                PlayerState.playing
+                                            ? EdgeInsets.fromLTRB(
+                                                11, 11, 11, 11)
+                                            : EdgeInsets.fromLTRB(
+                                                11, 11, 7, 11),
+                                        child: value.playerState ==
+                                                PlayerState.playing
+                                            ? SvgPicture.asset(
+                                                PlayerImages.pause,
+                                                fit: BoxFit.scaleDown,
+                                                height: value.fullScreenOption
+                                                        .enabled
+                                                    ? 50
+                                                    : 24,
+                                                width: value.fullScreenOption
+                                                        .enabled
+                                                    ? 50
+                                                    : 24,
+                                              )
+                                            : SvgPicture.asset(
+                                                PlayerImages.play,
+                                                fit: BoxFit.scaleDown,
+                                                height: value.fullScreenOption
+                                                        .enabled
+                                                    ? 50
+                                                    : 24,
+                                                width: value.fullScreenOption
+                                                        .enabled
+                                                    ? 50
+                                                    : 24,
+                                              ),
                                       ),
                                     ),
                                   ),
-                                  // Spacer(),
-                                  Visibility(
-                                    visible: !value.fullScreenOption.enabled,
-                                    child: InkWell(
-                                      child: Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                            fit: BoxFit.scaleDown,
-                                            PlayerImages.speed,
-                                            height: 24,
-                                            width: 24,
+                                  const SizedBox(
+                                    width: 5,
+                                  ),
+                                  StreamBuilder<YoutubeVideoState>(
+                                    initialData: YoutubeVideoState(),
+                                    stream: widget.controller.videoStateStream,
+                                    builder: (context, snapshot) {
+                                      var position =
+                                          snapshot.data?.position.inSeconds ??
+                                              0;
+                                      // var lastPosition = 0;
+                                      // var pressedCount = 0;
+                                      return Expanded(
+                                        child: InkWell(
+                                          onTap: () async {
+                                            await widget.controller.seekTo(
+                                              seconds: (position + 5),
+                                              allowSeekAhead: true,
+                                            );
+                                            await widget.controller.playVideo();
+                                            // pressedCount += 1;
+                                            // final duration = context.ytController.metadata.duration.inSeconds;
+                                            // if (lastPosition > position) {
+                                            //   widget.controller.seekTo(seconds: (lastPosition + 10));
+                                            //   lastPosition = position + 10;
+                                            // } else {
+                                            //   widget.controller.seekTo(seconds: (position + 10));
+                                            //   lastPosition = position +10;
+                                            // }
+
+                                            // if ((position - lastPosition) <= 2) {
+                                            //   widget.controller
+                                            //       .seekTo(seconds: (position + (10 * pressedCount)).toDouble());
+                                            // }else{
+                                            //    widget.controller
+                                            //       .seekTo(seconds: (position + 10).toDouble());
+                                            // }
+                                          },
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: const Color(0x33263047),
+                                              // color: Colors.white.withOpacity(.8),
+                                            ),
+                                            padding:
+                                                EdgeInsets.fromLTRB(9, 6, 9, 9),
+                                            child: SvgPicture.asset(
+                                              PlayerImages.seekFront,
+                                              fit: BoxFit.scaleDown,
+                                              height:
+                                                  value.fullScreenOption.enabled
+                                                      ? 54
+                                                      : 28,
+                                              width:
+                                                  value.fullScreenOption.enabled
+                                                      ? 54
+                                                      : 28,
+                                            ),
                                           ),
-                                          SizedBox(
-                                            width: 4,
-                                          ),
-                                          Text(
-                                            '1x',
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 17,
-                                                fontWeight: FontWeight.bold),
-                                          )
-                                        ],
-                                      ),
-                                      onTap: () {
-                                        // showSettingsBottomSheet(context, widget.controller);
-                                        showPlayBackBottomSheet(
-                                          context,
-                                          value.fullScreenOption.enabled,
-                                          widget.controller,
-                                        );
-                                      },
-                                    ),
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ],
                               ),
-                            ),
-                          ),
-                        );
-                      });
-                    }),
-                  ),
-                ),
+                            );
+                          },
+                        ),
+                      ),
 
-                //! Seek bar
-                YoutubeValueBuilder(
-                  builder: (context, value) {
-                    return Positioned.fill(
-                      bottom: 0,
-                      child: Align(
-                        alignment: Alignment.bottomCenter,
-                        child: Visibility(
-                          visible: value.isControlsVisible,
-                          child: Builder(builder: (context) {
-                            return Padding(
-                              padding: EdgeInsets.only(bottom: 10),
-                              child: SizedBox(
-                                // height: 20,
+                      //! Top back row
+
+                      Positioned.fill(
+                        top: 0,
+                        child: Align(
+                          alignment: Alignment.topCenter,
+                          child: YoutubeValueBuilder(builder: (context, value) {
+                            return Builder(builder: (context) {
+                              return SizedBox(
+                                // width: MediaQuery.of(context).size.width,
                                 width: double.infinity - widget.controlsPadding,
-                                child: Column(
-                                  // mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Row(
+                                child: Visibility(
+                                  visible: value.isControlsVisible,
+                                  child: Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                        11, 12, 11, 0),
+                                    child: Row(
                                       mainAxisAlignment:
-                                          MainAxisAlignment.start,
+                                          MainAxisAlignment.spaceBetween,
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
                                       children: [
-                                        StreamBuilder<YoutubeVideoState>(
-                                          initialData:
-                                              const YoutubeVideoState(),
-                                          stream: widget
-                                              .controller.videoStateStream,
-                                          builder: (context, snapshot) {
-                                            final position = snapshot
-                                                    .data?.position.inSeconds ??
-                                                0;
-
-                                            return Text(
-                                              intToTime(position),
-                                              style: const TextStyle(
+                                        Visibility(
+                                          replacement: SizedBox(
+                                            width: 20,
+                                          ),
+                                          visible: widget.isBackVisible,
+                                          child: InkWell(
+                                            onTap: widget.function,
+                                            child: Container(
+                                              width: 31,
+                                              height: 31,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: const Color(0x33263047)
+                                                    .withOpacity(.8),
+                                                // color: Colors.white.withOpacity(.8),
+                                              ),
+                                              child: const Center(
+                                                child: Icon(
+                                                  Icons.arrow_back,
                                                   color: Colors.white,
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w400),
-                                            );
-                                          },
-                                        ),
-                                        Expanded(
-                                          child: const VideoPositionSeeker(),
-                                        ),
-                                        StreamBuilder<YoutubeVideoState>(
-                                          initialData:
-                                              const YoutubeVideoState(),
-                                          stream: widget
-                                              .controller.videoStateStream,
-                                          builder: (context, snapshot) {
-                                            final duration = context
-                                                .ytController
-                                                .metadata
-                                                .duration
-                                                .inSeconds;
-                                            return Text(
-                                              intToTime(duration),
-                                              style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w400),
-                                            );
-                                          },
-                                        ),
-                                        SizedBox(
-                                          width: 10,
-                                        ),
-                                        InkWell(
-                                          onTap: () {
-                                            value.fullScreenOption.enabled
-                                                ? widget.controller
-                                                    .exitFullScreen()
-                                                : widget.controller
-                                                    .enterFullScreen();
-                                          },
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(
-                                                right: 10,
-                                                left: 5,
-                                                top: 1,
-                                                bottom: 1),
-                                            child: SvgPicture.asset(
-                                              height: 24,
-                                              width: 24,
-                                              value.fullScreenOption.enabled
-                                                  ? PlayerImages.exitFullScreen
-                                                  : PlayerImages.fullScreen,
+                                                ),
+                                              ),
                                             ),
+                                          ),
+                                        ),
+                                        // Spacer(),
+                                        Visibility(
+                                          visible:
+                                              !value.fullScreenOption.enabled,
+                                          child: InkWell(
+                                            child: Row(
+                                              children: [
+                                                SvgPicture.asset(
+                                                  fit: BoxFit.scaleDown,
+                                                  PlayerImages.speed,
+                                                  height: 24,
+                                                  width: 24,
+                                                ),
+                                                SizedBox(
+                                                  width: 4,
+                                                ),
+                                                Text(
+                                                  '1x',
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 17,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                )
+                                              ],
+                                            ),
+                                            onTap: () {
+                                              // showSettingsBottomSheet(context, widget.controller);
+                                              showPlayBackBottomSheet(
+                                                context,
+                                                value.fullScreenOption.enabled,
+                                                widget.controller,
+                                              );
+                                            },
                                           ),
                                         ),
                                       ],
                                     ),
-                                    Visibility(
-                                      visible: value.fullScreenOption.enabled,
-                                      child: InkWell(
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            SvgPicture.asset(
-                                              fit: BoxFit.scaleDown,
-                                              PlayerImages.speed,
-                                              height: 24,
-                                              width: 24,
-                                            ),
-                                            SizedBox(
-                                              width: 4,
-                                            ),
-                                            Text(
-                                              '1x',
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 17,
-                                                  fontWeight: FontWeight.bold),
-                                            )
-                                          ],
-                                        ),
-                                        onTap: () {
-                                          // showSettingsBottomSheet(context, widget.controller);
-                                          showPlayBackBottomSheet(
-                                            context,
-                                            value.fullScreenOption.enabled,
-                                            widget.controller,
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                              ),
-                            );
+                              );
+                            });
                           }),
                         ),
                       ),
-                    );
-                  },
-                )
-              ],
-            ),
-          ),
+
+                      //! Seek bar
+                      YoutubeValueBuilder(
+                        builder: (context, value) {
+                          return Positioned.fill(
+                            bottom: 0,
+                            child: Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Visibility(
+                                visible: value.isControlsVisible,
+                                child: Builder(builder: (context) {
+                                  return Padding(
+                                    padding: EdgeInsets.only(bottom: 10),
+                                    child: SizedBox(
+                                      // height: 20,
+                                      width: double.infinity -
+                                          widget.controlsPadding,
+                                      child: Column(
+                                        // mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              StreamBuilder<YoutubeVideoState>(
+                                                initialData:
+                                                    const YoutubeVideoState(),
+                                                stream: widget.controller
+                                                    .videoStateStream,
+                                                builder: (context, snapshot) {
+                                                  final position = snapshot
+                                                          .data
+                                                          ?.position
+                                                          .inSeconds ??
+                                                      0;
+
+                                                  return Text(
+                                                    intToTime(position),
+                                                    style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.w400),
+                                                  );
+                                                },
+                                              ),
+                                              Expanded(
+                                                child:
+                                                    const VideoPositionSeeker(),
+                                              ),
+                                              StreamBuilder<YoutubeVideoState>(
+                                                initialData:
+                                                    const YoutubeVideoState(),
+                                                stream: widget.controller
+                                                    .videoStateStream,
+                                                builder: (context, snapshot) {
+                                                  final duration = context
+                                                      .ytController
+                                                      .metadata
+                                                      .duration
+                                                      .inSeconds;
+                                                  return Text(
+                                                    intToTime(duration),
+                                                    style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.w400),
+                                                  );
+                                                },
+                                              ),
+                                              SizedBox(
+                                                width: 10,
+                                              ),
+                                              InkWell(
+                                                onTap: () {
+                                                  value.fullScreenOption.enabled
+                                                      ? widget.controller
+                                                          .exitFullScreen()
+                                                      : widget.controller
+                                                          .enterFullScreen();
+                                                },
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          right: 10,
+                                                          left: 5,
+                                                          top: 1,
+                                                          bottom: 1),
+                                                  child: SvgPicture.asset(
+                                                    height: 24,
+                                                    width: 24,
+                                                    value.fullScreenOption
+                                                            .enabled
+                                                        ? PlayerImages
+                                                            .exitFullScreen
+                                                        : PlayerImages
+                                                            .fullScreen,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Visibility(
+                                            visible:
+                                                value.fullScreenOption.enabled,
+                                            child: InkWell(
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  SvgPicture.asset(
+                                                    fit: BoxFit.scaleDown,
+                                                    PlayerImages.speed,
+                                                    height: 24,
+                                                    width: 24,
+                                                  ),
+                                                  SizedBox(
+                                                    width: 4,
+                                                  ),
+                                                  Text(
+                                                    '1x',
+                                                    style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 17,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  )
+                                                ],
+                                              ),
+                                              onTap: () {
+                                                // showSettingsBottomSheet(context, widget.controller);
+                                                showPlayBackBottomSheet(
+                                                  context,
+                                                  value
+                                                      .fullScreenOption.enabled,
+                                                  widget.controller,
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ),
+                            ),
+                          );
+                        },
+                      )
+                    ],
+                  ),
+                ),
         );
       }),
     );
