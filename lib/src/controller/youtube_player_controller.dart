@@ -278,6 +278,11 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
           .replaceFirst('<<host>>', params.origin ?? 'https://www.youtube.com'),
       baseUrl: baseUrl,
     );
+
+    webViewController
+      ..setNavigationDelegate(NavigationDelegate(
+        onNavigationRequest: (request) => NavigationDecision.prevent,
+      ));
   }
 
   Future<void> _run(
